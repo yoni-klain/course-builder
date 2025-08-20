@@ -24,3 +24,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Тёмная палитра */
+:root {
+  --bg: #0b0f17;
+  --fg: #e6edf3;
+  --muted: #9aa4af;
+}
+html, body { background: var(--bg); color: var(--fg); }
+
+/* Маленькая библиотека классов */
+@layer components {
+  .card   { @apply rounded-2xl border border-gray-800 bg-gray-900/50 shadow; }
+  .btn    { @apply inline-flex items-center gap-2 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 hover:bg-gray-700 active:scale-[.99]; }
+  .input  { @apply rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500; }
+  .select { @apply rounded-lg border border-gray-700 bg-gray-900 px-3 py-2; }
+  .badge  { @apply inline-flex items-center rounded-full border border-gray-700 px-2 py-0.5 text-xs text-gray-300; }
+}
+
+/* RTL нюансики для контента */
+.markdown[dir="rtl"] { text-align: right; }
