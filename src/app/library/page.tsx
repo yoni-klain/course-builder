@@ -13,6 +13,9 @@ type CourseCard = {
 };
 
 const LANGS = ["ru", "en", "he"] as const;
+type Lang = (typeof LANGS)[number];
+const isLang = (v: string): v is Lang =>
+    (LANGS as readonly string[]).includes(v);
 
 export default function LibraryPage() {
     const [lang, setLang] = useState<"ru" | "en" | "he">("he");
@@ -67,26 +70,22 @@ export default function LibraryPage() {
         <main dir={lang === "he" ? "rtl" : "ltr"}>
             <h1 className="mb-4 text-2xl font-semibold">Библиотека</h1>
 
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-                <label className="inline-flex items-center gap-2">
-                    <span className="text-sm text-gray-400">Язык контента</span>
-                    <select className="select" value={lang} onChange={(e) => setLang(e.target.value as any)}>
-                        {LANGS.map((L) => <option key={L} value={L}>{L}</option>)}
-                    </select>
-                </label>
+            <label className="inline-flex items-center gap-2">
+                <span className="text-sm text-gray-400">Язык контента</span>
+                <select
+                    className="select"
+                    value={lang}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                        const v = e.target.value;
+                        if (isLang(v)) setLang(v);        // без any и без небезопасного cast
+                    }}
+                >
+                    {LANGS.map((L) => (
+                        <option key={L} value={L}>{L}</option>
+                    ))}
+                </select>
+            </label>
 
-                <div className="inline-flex items-center gap-2">
-                    <input
-                        className="input min-w-[220px]"
-                        placeholder={lang === "ru" ? "Название курса" : lang === "he" ? "שם הקורס" : "Course title"}
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                    />
-                    <button className="btn" onClick={createCourse} disabled={creating}>
-                        {creating ? "Создаю…" : "Создать курс"}
-                    </button>
-                </div>
-            </div>
 
             {loading && <div>Загрузка…</div>}
             {err && <div className="text-red-400">Ошибка: {err}</div>}
