@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import ToastProvider from "@/components/ui/toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,17 +22,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru">
       <body className="min-h-screen">
-        <header className="border-b border-gray-800">
-          <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
-            <a href="/library" className="font-semibold tracking-tight">Course Builder</a>
-            <nav className="text-sm text-gray-400">
-              <a href="/library" className="hover:text-gray-200">Library</a>
-            </nav>
-          </div>
-        </header>
-        <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+        <ToastProvider>
+          <header className="border-b border-gray-800">
+            <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+              <a href="/library" className="font-semibold tracking-tight">Course Builder</a>
+              <nav className="text-sm text-gray-400">
+                <a href="/library" className="hover:text-gray-200">Library</a>
+              </nav>
+            </div>
+          </header>
+          <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+        </ToastProvider>
       </body>
     </html>
   );
 }
-

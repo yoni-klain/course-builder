@@ -1,6 +1,7 @@
+// src/app/library/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 
 type CourseCard = {
     id: string;
@@ -14,11 +15,10 @@ type CourseCard = {
 
 const LANGS = ["ru", "en", "he"] as const;
 type Lang = (typeof LANGS)[number];
-const isLang = (v: string): v is Lang =>
-    (LANGS as readonly string[]).includes(v);
+const isLang = (v: string): v is Lang => (LANGS as readonly string[]).includes(v);
 
 export default function LibraryPage() {
-    const [lang, setLang] = useState<"ru" | "en" | "he">("he");
+    const [lang, setLang] = useState<Lang>("he");
     const [items, setItems] = useState<CourseCard[]>([]);
     const [loading, setLoading] = useState(false);
     const [err, setErr] = useState<string | null>(null);
@@ -42,7 +42,9 @@ export default function LibraryPage() {
         }
     }
 
-    useEffect(() => { load(); }, [lang]);
+    useEffect(() => {
+        void load();
+    }, [lang]);
 
     async function createCourse() {
         setCreating(true);
@@ -55,7 +57,7 @@ export default function LibraryPage() {
             });
             if (!res.ok) {
                 const j = await res.json().catch(() => ({}));
-                throw new Error(j.detail || j.error || `HTTP ${res.status}`);
+                throw new Error((j as { detail?: string; error?: string }).detail || (j as any).error || `HTTP ${res.status}`);
             }
             setNewTitle("");
             await load(); // refresh list
@@ -70,22 +72,45 @@ export default function LibraryPage() {
         <main dir={lang === "he" ? "rtl" : "ltr"}>
             <h1 className="mb-4 text-2xl font-semibold">Библиотека</h1>
 
-            <label className="inline-flex items-center gap-2">
-                <span className="text-sm text-gray-400">Язык контента</span>
-                <select
-                    className="select"
-                    value={lang}
-                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                        const v = e.target.value;
-                        if (isLang(v)) setLang(v);        // без any и без небезопасного cast
-                    }}
-                >
-                    {LANGS.map((L) => (
-                        <option key={L} value={L}>{L}</option>
-                    ))}
-                </select>
-            </label>
+            {/* Верхняя панель: выбор языка + создание курса */}
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+                <label className="inline-flex items-center gap-2">
+                    <span className="text-sm text-gray-400">Язык контента</span>
+                    <select
+                        className="select"
+                        value={lang}
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                            const v = e.target.value;
+                            if (isLang(v)) setLang(v);
+                        }}
+                    >
+                        {LANGS.map((L) => (
+                            <option key={L} value={L}>
+                                {L}
+                            </option>
+                        ))}
+                    </select>
+                </label>
 
+                <div className="inline-flex items-center gap-2">
+                    <input
+                        className="input min-w-[220px]"
+                        dir={lang === "he" ? "rtl" : "ltr"}
+                        placeholder={
+                            lang === "ru" ? "Название курса" : lang === "he" ? "שם הקורס" : "Course title"
+                        }
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" && !creating) void createCourse();
+                        }}
+                        maxLength={120}
+                    />
+                    <button className="btn" onClick={() => void createCourse()} disabled={creating}>
+                        {creating ? "Создаю…" : "Создать курс"}
+                    </button>
+                </div>
+            </div>
 
             {loading && <div>Загрузка…</div>}
             {err && <div className="text-red-400">Ошибка: {err}</div>}
@@ -101,13 +126,16 @@ export default function LibraryPage() {
                         <h3 className="mb-2 text-lg font-medium">{c.title}</h3>
                         <p className="m-0 text-gray-200">{c.description}</p>
                         <div className="mt-3">
-                            <a className="btn" href={`/course/${c.id}?lang=${lang}`}>Открыть</a>
+                            <a className="btn" href={`/course/${c.id}?lang=${lang}`}>
+                                Открыть
+                            </a>
                         </div>
                     </article>
                 ))}
-                {!loading && !err && items.length === 0 && <div className="text-gray-400">Нет курсов для этого языка.</div>}
+                {!loading && !err && items.length === 0 && (
+                    <div className="text-gray-400">Нет курсов для этого языка.</div>
+                )}
             </div>
         </main>
     );
-
 }
